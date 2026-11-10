@@ -22,8 +22,8 @@
 // "blynk.cloud" funciona en la mayoría de los casos.
 #define BLYNK_SERVER         "blynk.cloud"
 
-// --- Broker MQTT (Mosquitto en el PC Windows del laboratorio) ---
-#define MQTT_SERVER    "192.168.1.50"   // IPv4 REAL del PC (ipconfig). Ejemplo, no copiar.
+// --- Broker MQTT (Mosquitto en el PC del laboratorio, Windows o Linux) ---
+#define MQTT_SERVER    "192.168.1.50"   // IPv4 REAL del PC (ipconfig / hostname -I). Ejemplo, no copiar.
 #define MQTT_USER      "esp32lab"
 #define MQTT_PASSWORD  "CONTRASENA_MQTT"
 

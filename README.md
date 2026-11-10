@@ -56,4 +56,4 @@ Prototipo de ventilación reactiva diseñado con un microcontrolador **ESP32** p
 |---|---|
 | [docs/seguridad.md](docs/seguridad.md) | Vulnerabilidades físicas y lógicas, matriz de riesgo, mitigaciones y preguntas de análisis |
 | [docs/plan-pruebas.md](docs/plan-pruebas.md) | Variables, parámetros, casos de prueba con resultados esperados y análisis |
-| [mosquitto/](mosquitto/) | Configuración del broker (sin acceso anónimo, con log) y ACL de mínimo privilegio |
+| [mosquitto/](mosquitto/) | Configuración del broker para Windows (`mosquitto.conf.example`) y Linux (`linux/ventilacion.conf`): sin acceso anónimo, con log y ACL de mínimo privilegio |

@@ -10,7 +10,7 @@ Una vulnerabilidad se clasifica según **dónde se origina la debilidad** (físi
 [MQ-9]──GPIO34─┐
 [Servo]─GPIO18─┤ ESP32 ──Wi-Fi WPA2 2.4GHz──► Router ──Internet──► Blynk Cloud (TLS 443) ◄── App móvil / Web
 [LED]──GPIO2───┘          │
-                          └──MQTT TCP 1883 (LAN)──► PC Windows: Mosquitto (auth + ACL) ◄── mosquitto_sub/pub
+                          └──MQTT TCP 1883 (LAN)──► PC Windows o Linux: Mosquitto (auth + ACL) ◄── mosquitto_sub/pub
 ```
 
 ## 2. Vulnerabilidades físicas (Actividad A)
@@ -38,7 +38,7 @@ Completa la columna **Observado en el montaje** con tus propias fotos (`docs/evi
 | L6 | MQTT | Broker con acceso anónimo | – | `allow_anonymous false` y `password_file` |
 | L7 | MQTT | Tráfico sin cifrar en TCP/1883: usuario, contraseña y datos visibles en la LAN | – | **Pendiente (aceptado en laboratorio).** Fase 2 con TLS en 8883 lista (`MQTT_USE_TLS`) |
 | L8 | MQTT | Permisos excesivos: cualquier cliente publica en cualquier tema | – | ACL: `esp32lab` solo publica datos y lee comandos; `monitor` hace lo inverso |
-| L9 | MQTT | El puerto 1883 expuesto a Internet | – | Regla de firewall solo para el perfil privado y sin redirección de puertos |
+| L9 | MQTT | El puerto 1883 expuesto a Internet | – | Firewall abierto solo en la red privada (perfil privado en Windows, o regla para la subred LAN con firewalld/ufw en Linux) y sin redirección de puertos |
 | L10 | Blynk | Auth Token filtrado (commit, captura, chat) permite controlar el equipo | – | Token en `secrets.h`. Procedimiento de *Reset Auth Token* documentado |
 | L11 | Blynk | Conexión a Blynk por TCP/80 sin cifrar | La guía usa `BlynkSimpleEsp32.h` (80) | `BlynkSimpleEsp32_SSL.h`: TLS en 443 |
 | L12 | Blynk | Cuenta Blynk con contraseña débil o compartida | – | Contraseña única. Compartir el dashboard con roles, no con la cuenta |
@@ -77,7 +77,7 @@ P = probabilidad (1–3), I = impacto (1–3), R = P × I. Interpretación: 1–
 - **¿Qué pasa si el broker acepta anónimos?** Cualquier equipo de la red podría leer la telemetría o publicar en `comando` y encender o apagar el ventilador.
 - **¿Por qué no exponer 1883 a Internet?** Los escáneres automáticos buscan brokers abiertos. Las credenciales viajarían en claro por Internet y el broker quedaría expuesto a fuerza bruta y DoS.
 - **¿Qué aporta una ACL?** Limita *qué* puede hacer cada usuario autenticado. Si se roban las credenciales del ESP32, con ellas no se pueden enviar comandos.
-- **¿Qué hace falta para MQTT con TLS?** Una CA y un certificado del servidor, el listener 8883 con `cafile`, `certfile` y `keyfile`, `WiFiClientSecure` con `setCACert` en el ESP32 y abrir 8883 en el firewall. Ver `docs/mosquitto-mqtt.md` §5.
+- **¿Qué hace falta para MQTT con TLS?** Una CA y un certificado del servidor, el listener 8883 con `cafile`, `certfile` y `keyfile`, `WiFiClientSecure` con `setCACert` en el ESP32 y abrir 8883 en el firewall. Ver `docs/mosquitto-mqtt.md` §4.
 
 ## 7. Trabajo colaborativo (completar)
 

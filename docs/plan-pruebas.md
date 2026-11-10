@@ -17,7 +17,7 @@ Cubre la rúbrica Eva 3, criterios 6 (planificación), 7 (ejecución) y 8 (anál
 | RSSI Wi-Fi | `WiFi.RSSI()` | dBm (aceptable > -75) | – |
 | Periodo de telemetría | `config.h` | Blynk 2 s, MQTT 5 s | – |
 
-**Entorno de prueba:** ESP32 DevKit, MQ-9 precalentado **al menos 3 minutos** (el sensor necesita calentar la resistencia), red WPA2 de 2.4 GHz, PC con Windows y Mosquitto en la misma red, y la app Blynk en el celular.
+**Entorno de prueba:** ESP32 DevKit, MQ-9 precalentado **al menos 3 minutos** (el sensor necesita calentar la resistencia), red WPA2 de 2.4 GHz, PC (Windows o Linux) con Mosquitto en la misma red, y la app Blynk en el celular.
 
 ## 2. Casos de prueba
 
@@ -49,7 +49,7 @@ Cubre la rúbrica Eva 3, criterios 6 (planificación), 7 (ejecución) y 8 (anál
 
 | ID | Prueba | Procedimiento | Resultado esperado | Obtenido | Evidencia |
 |---|---|---|---|---|---|
-| C1 | Broker | `netstat -ano \| findstr :1883` | `LISTENING` | | |
+| C1 | Broker | Windows: `netstat -ano \| findstr :1883`. Linux: `ss -ltn \| grep 1883` | `LISTENING` / `LISTEN` | | |
 | C2 | Autenticación | `mosquitto_sub` sin `-u` / `-P` | `not authorised` | | |
 | C3 | ESP32 → PC | `mosquitto_sub -t "laboratorio/esp32/#"` | JSON cada 5 s y `estado online` | | |
 | C4 | PC → ESP32 | Publicar `ON` y luego `AUTO` | Servo y LED responden. Serial muestra el tema y el mensaje | | |
