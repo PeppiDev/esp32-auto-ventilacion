@@ -1,0 +1,15 @@
+# Credenciales reales (Wi-Fi, Blynk Auth Token, MQTT) — nunca al repo
+secrets.h
+
+# Contraseñas / certificados del broker
+mosquitto/passwd
+mosquitto/certs/*.key
+mosquitto/certs/*.crt
+mosquitto/certs/*.srl
+mosquitto/certs/*.csr
+
+# Artefactos de compilación
+build/
+*.bin
+*.elf
+*.map

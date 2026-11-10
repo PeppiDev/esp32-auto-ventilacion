@@ -1,0 +1,18 @@
+# ==========================================================
+# ACL de Mosquitto — copiar a C:\mosquitto\acl
+# Principio de mínimo privilegio.
+# ==========================================================
+
+# Dispositivo ESP32: publica datos/estado, solo LEE comandos
+user esp32lab
+topic write laboratorio/esp32/datos
+topic write laboratorio/esp32/estado
+topic read  laboratorio/esp32/comando
+
+# Operador / PC de monitoreo: lee datos/estado, envía comandos
+user monitor
+topic read  laboratorio/esp32/datos
+topic read  laboratorio/esp32/estado
+topic write laboratorio/esp32/comando
+# Tema de prueba inicial del broker (guía, paso 10)
+topic readwrite laboratorio/prueba

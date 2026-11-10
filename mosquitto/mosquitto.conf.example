@@ -1,0 +1,35 @@
+# ==========================================================
+# Fragmento para AGREGAR al final de:
+#   C:\Program Files\mosquitto\mosquitto.conf
+# (revisar que no existan directivas duplicadas)
+# ==========================================================
+
+# Escucha en la red local (solo red privada del laboratorio; NO abrir en el router)
+listener 1883 0.0.0.0
+
+# Sin acceso anónimo: todo cliente debe autenticarse
+allow_anonymous false
+password_file C:\mosquitto\passwd
+
+# Mínimo privilegio: cada usuario solo publica/lee los temas que necesita
+acl_file C:\mosquitto\acl
+
+# Registro de eventos (conexiones, rechazos) como evidencia de auditoría
+log_dest file C:\mosquitto\mosquitto.log
+log_type error
+log_type warning
+log_type notice
+log_type information
+connection_messages true
+log_timestamp true
+
+# ----------------------------------------------------------
+# FASE 2 (opcional): MQTT sobre TLS en 8883.
+# Requiere certificados (ver docs/mosquitto-mqtt.md, sección TLS)
+# y MQTT_USE_TLS = 1 en config.h. Al migrar, comentar el listener 1883.
+# ----------------------------------------------------------
+#listener 8883 0.0.0.0
+#cafile   C:\mosquitto\certs\ca.crt
+#certfile C:\mosquitto\certs\server.crt
+#keyfile  C:\mosquitto\certs\server.key
+#tls_version tlsv1.2
