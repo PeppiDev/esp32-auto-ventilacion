@@ -38,8 +38,11 @@
 int  umbral = UMBRAL_DEFECTO;
 bool modoManual = false;          // true = forzado desde Blynk (V0) o MQTT ("ON")
 bool ventilando = false;
+bool verificando = false;         // Servo detenido midiendo si el aire ya está limpio
 bool estadoCambio = false;        // Forzar envío inmediato de telemetría
 unsigned long tiempoInicioVentilacion = 0;
+unsigned long tiempoActivacion = 0;
+unsigned long tiempoInicioPausa = 0;
 
 int lecturaInstantanea = 0;
 long lecturaFiltrada = 1450;      // Filtro pasa-bajas
@@ -69,8 +72,10 @@ void activarVentilacion(const char* origen) {
       Blynk.logEvent(BLYNK_EVENTO_ALERTA, "Aire viciado detectado: ventilando");
     }
 #endif
+    tiempoActivacion = millis();
   }
   ventilando = true;
+  verificando = false;
   tiempoInicioVentilacion = millis();
   digitalWrite(PIN_LED, HIGH);
 }
@@ -81,6 +86,7 @@ void desactivarVentilacion(const char* motivo) {
     estadoCambio = true;
   }
   ventilando = false;
+  verificando = false;
   digitalWrite(PIN_LED, LOW);
   moverServo(0);
   servoPos = 0;
@@ -355,18 +361,32 @@ void loop() {
   lecturaInstantanea = analogRead(PIN_MQ9);
   lecturaFiltrada = (lecturaFiltrada * 8 + lecturaInstantanea * 2) / 10;
 
-  bool aireViciado = lecturaFiltrada > umbral || lecturaInstantanea > umbral;
+  // Solo la lectura filtrada: un pico suelto de la crudo no dispara el ventilador
+  bool aireViciado = lecturaFiltrada > umbral;
   if (modoManual) {
     if (!ventilando) activarVentilacion("manual");
-  } else if (aireViciado) {
-    activarVentilacion("sensor");     // Reinicia el cronómetro mínimo
-  } else if (ventilando) {
-    bool tiempoCumplido = (ahora - tiempoInicioVentilacion >= TIEMPO_MINIMO_VENTILANDO);
-    bool aireLimpio = (lecturaFiltrada < umbral - HISTERESIS);
-    if (tiempoCumplido && aireLimpio) desactivarVentilacion("aire limpio");
+  } else if (!ventilando) {
+    if (aireViciado) activarVentilacion("sensor");
+  } else if (!verificando) {
+    // Mientras el servo se mueve la lectura está inflada por su ruido: no se
+    // evalúa. Cumplido el tiempo mínimo, se detiene el servo para medir.
+    if (ahora - tiempoInicioVentilacion >= TIEMPO_MINIMO_VENTILANDO) {
+      verificando = true;
+      tiempoInicioPausa = ahora;
+      moverServo(0);
+    }
+  } else if (ahora - tiempoInicioPausa >= TIEMPO_ESTABILIZACION) {
+    verificando = false;
+    if (lecturaFiltrada < umbral - HISTERESIS) {
+      desactivarVentilacion("aire limpio");
+    } else if (ahora - tiempoActivacion >= TIEMPO_MAXIMO_VENTILANDO) {
+      desactivarVentilacion("tiempo maximo");   // Si sigue sobre el umbral, se reactiva
+    } else {
+      tiempoInicioVentilacion = ahora;          // Aire aún viciado: otro ciclo mínimo
+    }
   }
 
-  if (ventilando && ahora - prevServoTime >= SERVO_INTERVAL) {
+  if (ventilando && !verificando && ahora - prevServoTime >= SERVO_INTERVAL) {
     prevServoTime = ahora;
     servoPos += servoDir;
     if (servoPos >= 180 || servoPos <= 0) servoDir = -servoDir;
@@ -412,5 +432,9 @@ void loop() {
     lastLog = ahora;
     Serial.printf("Crudo:%d Filtrado:%ld Umbral:%d Ventilando:%d\n",
                   lecturaInstantanea, lecturaFiltrada, umbral, ventilando ? 1800 : 1350);
+    // Sin divisor de voltaje: avisar si AO se acerca al máximo del GPIO 34
+    if (lecturaInstantanea >= ADC_SATURADO) {
+      Serial.println("!! [ALERTA] AO cerca de 3.3V: riesgo para GPIO 34 sin divisor");
+    }
   }
 }

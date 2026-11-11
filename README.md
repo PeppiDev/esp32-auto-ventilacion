@@ -34,12 +34,21 @@ Prototipo de ventilación reactiva diseñado con un microcontrolador **ESP32** p
 ## Características del Firmware
 
 - **Librerías:** `Blynk` y `PubSubClient` (se pueden desactivar en `config.h`). El servo utiliza el control nativo PWM (`ledc`) del ESP32 para controlar el servomotor a 50Hz.
-- **Filtro pasa-bajas digital:** Suaviza caídas abruptas causadas por el enfriamiento del sensor durante un soplido directo.
+- **Filtro pasa-bajas digital:** Suaviza caídas abruptas causadas por el enfriamiento del sensor durante un soplido directo. La activación usa solo la lectura filtrada: los picos sueltos de la cruda (se midieron de hasta +300) no disparan el ventilador.
+- **Umbral calibrado en la placa real:** `UMBRAL_DEFECTO = 1450`. Con el servo detenido, el aire normal se midió entre ~1170 y ~1520 (deriva con el calentamiento) y un soplido sube +200 a +330. Por esa deriva, el umbral se ajusta en vivo con el slider V3 o `UMBRAL=n` por MQTT.
 - **Tiempo mínimo de extracción:** Una vez activado, garantiza un ciclo mínimo de **6 segundos** de ventilación continua para dispersar el aire viciado.
-- **Telemetría en tiempo real:** Emite datos continuos a 115200 baudios compatibles con el **Serial Plotter** de Arduino IDE (`Crudo`, `Filtrado`, `Umbral`, `Ventilando`).
+- **Verificación con servo detenido:** El servo comparte los 5V con el MQ-9 y en marcha eleva la lectura entre +90 y +400, lo que dejaba el ventilador encendido indefinidamente. Tras los 6 s mínimos el servo se detiene 600 ms y recién ahí se compara con `umbral - 60`; si el aire sigue viciado, ventila otros 6 s.
+- **Tiempo máximo de 60 s:** Si el aire normal deriva a la banda de histéresis, el ventilador se apaga a los 60 s; si la lectura sigue sobre el umbral, se reactiva.
+- **Alerta de saturación:** Si la lectura cruda llega a 4000 (AO cerca de 3.3V) se imprime una alerta por serie.
+- **Telemetría en tiempo real:** Emite datos continuos a 115200 baudios compatibles con el **Serial Plotter** de Arduino IDE (`Crudo`, `Filtrado`, `Umbral`, `Ventilando`). Mientras ventila, `Filtrado` aparece inflado por el ruido del servo.
 - **Blynk IoT:** switch de ventilación manual (V0), gauge de calidad de aire (V1), LED de estado (V2), slider de umbral (V3) y RSSI (V4). Conexión por TLS (443). → [docs/blynk.md](docs/blynk.md)
 - **MQTT:** publica telemetría JSON en `laboratorio/esp32/datos`, estado `online`/`offline` (LWT) y recibe `ON`/`OFF`/`AUTO`/`UMBRAL=n`/`ESTADO` en `laboratorio/esp32/comando`. → [docs/mosquitto-mqtt.md](docs/mosquitto-mqtt.md)
 - **Autonomía:** el control local sigue funcionando sin Wi-Fi, sin Blynk o sin broker. La reconexión no bloquea.
+
+### Limitaciones conocidas del montaje
+
+- **Sin divisor de voltaje en `AO`:** El MQ-9 se alimenta a 5V y su salida puede superar los 3.3V que tolera el `GPIO 34`. Con aire normal la lectura ronda 1–1.4V, pero ante una concentración alta de gas el pin puede dañarse. Si aparece la alerta de saturación, desconectar `AO`.
+- **Servo y sensor en la misma fuente:** El firmware lo compensa midiendo con el servo detenido; una fuente de 5V separada para el servo (con GND común) daría lecturas más limpias.
 
 ---
 

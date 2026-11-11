@@ -30,7 +30,7 @@ Cubre la rúbrica Eva 3, criterios 2 (proyecto Blynk), 3 (Datastreams y Dashboar
 | V0 | Ventilacion manual | Integer | 0 | 1 | 0 | App → ESP32 | Switch |
 | V1 | Calidad de aire (MQ-9) | Integer | 0 | 4095 | – | ESP32 → App | Gauge + SuperChart |
 | V2 | Ventilando | Integer | 0 | 1 | 0 | ESP32 → App | LED |
-| V3 | Umbral | Integer | 500 | 4000 | 1580 | App ↔ ESP32 | Slider |
+| V3 | Umbral | Integer | 500 | 4000 | 1450 | App ↔ ESP32 | Slider |
 | V4 | Senal WiFi (RSSI) | Integer | -100 | 0 | – | ESP32 → App | Label/Value |
 
    En V1 activa la opción **Save raw data / history** para que SuperChart muestre historial.

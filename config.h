@@ -26,11 +26,20 @@ const int DUTY_MAX       = 7864;  // ~180°
 const unsigned long SERVO_INTERVAL = 15; // ms entre pasos del abanico
 
 // --- Control de ventilación ---
-const int UMBRAL_DEFECTO = 1580;  // Valor calibrado con el MQ-9 real (exhalación)
+// Medido en la placa real con el servo detenido: aire normal entre ~1170 y
+// ~1520 (deriva con el calentamiento) y un soplido sube +200 a +330.
+// Ajustar en vivo con el slider V3 o "UMBRAL=n" por MQTT.
+const int UMBRAL_DEFECTO = 1450;
 const int UMBRAL_MIN     = 500;   // Rango aceptado al cambiarlo por Blynk/MQTT
 const int UMBRAL_MAX     = 4000;
 const int HISTERESIS     = 60;    // Apaga cuando filtrado < umbral - histéresis
-const unsigned long TIEMPO_MINIMO_VENTILANDO = 6000; // ms
+const unsigned long TIEMPO_MINIMO_VENTILANDO = 6000;  // ms
+// El servo comparte los 5V con el MQ-9 y en marcha eleva la lectura +90 a +400,
+// por eso el aire se evalúa con el servo detenido durante esta pausa.
+const unsigned long TIEMPO_ESTABILIZACION    = 600;   // ms
+// Evita quedar encendido si el aire normal deriva a la banda de histéresis.
+const unsigned long TIEMPO_MAXIMO_VENTILANDO = 60000; // ms
+const int ADC_SATURADO = 4000;    // AO cerca de 3.3V: límite del GPIO 34 (sin divisor)
 
 // --- Comunicaciones ---
 const unsigned long WIFI_TIMEOUT_INICIAL = 15000; // ms esperando Wi-Fi en setup()

@@ -15,7 +15,8 @@ La guía original instala Mosquitto en Windows, pero **el profesor autorizó hac
 | Configuración de Mosquitto (Linux) + ACL | ✅ Probada en un contenedor con Mosquitto 2.1.2: rechaza anónimos, deja pasar datos y comandos, y la ACL bloquea a `esp32lab` cuando publica comandos |
 | Configuración de Mosquitto (Windows) | ⚠️ Escrita según la guía del profesor, sin probar en Windows |
 | Documentación (Blynk, MQTT, pruebas, seguridad) | ✅ Lista, con columnas para completar |
-| **Firmware en la placa física** | ❌ **Nunca se ha cargado ni probado** |
+| Control local en la placa física | ✅ Cargado con `ENABLE_BLYNK 0` y `ENABLE_MQTT 0` (sin `secrets.h` real): reposo estable 135 s sin disparos falsos, soplido detectado y apagado automático. Umbral calibrado a 1450 |
+| **Firmware completo (Wi-Fi + Blynk + MQTT) en la placa** | ❌ **Nunca se ha cargado ni probado** |
 | Template y dispositivo en Blynk | ❌ Por crear (requiere la cuenta del usuario) |
 | Pruebas, evidencias e informe | ❌ Pendiente: ver la sección **Pendiente después del deploy** |
 
@@ -126,7 +127,7 @@ Wi-Fi OK. IP ESP32: 192.168.x.x  RSSI: -5x dBm
 Conectando a MQTT (puerto 1883, sin TLS)... conectado
 [...] Ready (ping: ..ms).
 [BLYNK] Conectado a la nube
-Crudo:1460 Filtrado:1452 Umbral:1580 Ventilando:1350
+Crudo:1162 Filtrado:1182 Umbral:1450 Ventilando:1350
 ```
 
 Diagnóstico:
@@ -141,7 +142,7 @@ Diagnóstico:
 | Blynk `Invalid auth token` | El token no corresponde o el servidor regional no es el correcto (`BLYNK_SERVER`) |
 | Blynk no conecta y MQTT sí | El handshake TLS falla o la red bloquea el puerto 443: revisar la versión de la librería y el firewall de la red. Como diagnóstico temporal, cambiar a `BlynkSimpleEsp32.h` (puerto 80) y **volver a TLS** después |
 | Reinicios al mover el servo (`Brownout detector`) | Alimentación insuficiente: usar una fuente de 5 V externa con GND común |
-| `Filtrado` siempre sobre el umbral | MQ-9 sin precalentar (esperar 3 min o más) o umbral demasiado bajo: ajustarlo con el slider V3 |
+| `Filtrado` siempre sobre el umbral | MQ-9 sin precalentar (esperar 3 min o más) o umbral demasiado bajo: ajustarlo con el slider V3. Mientras ventila, `Filtrado` sube +90 a +400 por el ruido del servo; la decisión de apagar se toma con el servo detenido |
 
 ## Pendiente después del deploy
 
@@ -159,8 +160,10 @@ Si algo falla aquí, corregir el firmware, volver a compilar y anotar la desviac
 
 ### 2. Calibrar el MQ-9
 
-- [ ] Precalentar el sensor 3 minutos o más y anotar la lectura `Filtrado` en reposo (prueba A2).
-- [ ] Si la base no está alrededor de 1400–1500, ajustar `UMBRAL_DEFECTO` en `config.h` (base + 100 aprox.) o el slider V3, y anotar el valor final en el plan de pruebas.
+Ya hecho en la placa real (2026-11-11), con el servo detenido: aire normal entre ~1170 y ~1520 según el calentamiento, soplido +200 a +330, picos sueltos de la cruda de hasta +300 y ruido del servo en marcha de +90 a +400. `UMBRAL_DEFECTO` quedó en 1450.
+
+- [ ] Precalentar el sensor 3 minutos o más y anotar la lectura `Filtrado` en reposo (prueba A2). Leerla con el servo detenido: en marcha aparece inflada.
+- [ ] Si la base del día deja menos de ~100 de margen bajo 1450, ajustar con el slider V3 (base + 100 a 150) y anotar el valor final en el plan de pruebas.
 
 ### 3. Ejecutar el plan de pruebas (`docs/plan-pruebas.md`)
 
